@@ -400,6 +400,7 @@ static void MoveGridToMouse (COMMAND_T* ct)
 			{
 				int prevId = g_moveGridTempoMap->FindPrevious(grid);
 				int shape; g_moveGridTempoMap->GetPoint(prevId, NULL, NULL, &shape, NULL);
+				//TODO set new tempo to warped grid if no subsequent tempo markers
 				if (g_moveGridTempoMap->CreatePoint(prevId+1, grid, g_moveGridTempoMap->ValueAtPosition(grid), shape, 0, false))
 				targetId = prevId + 1;
 			}
