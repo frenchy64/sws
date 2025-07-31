@@ -154,8 +154,8 @@ static COMMAND_T g_commandTable[] =
 	{ { DEFACCEL, "SWS: Move cursor right 5ms" },						"SWS_MOVECUR5MSRIGHT",	MoveCursorMs,     NULL,  5 },
 	{ { DEFACCEL, "SWS: Move cursor left by default fade length" },		"SWS_MOVECURFADELEFT",	MoveCursorFade,   NULL, -1 },
 	{ { DEFACCEL, "SWS: Move cursor right by default fade length" },	"SWS_MOVECURFADERIGHT",	MoveCursorFade,   NULL,  1 },
-	{ { DEFACCEL, "SWS: Move cursor left to grid division" },	"SWS_MOVECURLEFTTOGRID",	MoveCursorLeftToGrid, },
-	{ { DEFACCEL, "SWS: Move cursor right to grid division" },"SWS_MOVECURRIGHTTOGRID",	MoveCursorRightToGrid, },
+	{ { DEFACCEL, "SWS: Move cursor left to grid division" }, "SWS_MOVECURLEFTTOGRID", MoveCursorLeftToGrid, },
+	{ { DEFACCEL, "SWS: Move cursor right to grid division" }, "SWS_MOVECURRIGHTTOGRID", MoveCursorRightToGrid, },
 
 	{ {}, LAST_COMMAND, }, // Denote end of table
 };
