@@ -1887,53 +1887,6 @@ double GetClosestGridDiv (double position)
 	return gridDiv;
 }
 
-double GetNextGridLine (double position)
-{
-	double nextGridLine = 0;
-
-	if (position >= 0)
-	{
-		PreventUIRefresh(1);
-		double editCursor = GetCursorPositionEx(NULL);
-
-		// prevent edit cursor undo
-		const ConfigVar<int> editCursorUndo("undomask");
-		ConfigVarOverride<int> tmpUndoMask(editCursorUndo,
-			ClearBit(editCursorUndo.value_or(0), 3));
-
-		SetEditCurPos(position, false, false);
-		Main_OnCommand(40647, 0); // View: Move cursor right to grid division
-		nextGridLine = GetCursorPositionEx(NULL);
-
-		SetEditCurPos(editCursor, false, false);
-		PreventUIRefresh(-1);
-	}
-
-	return nextGridLine;
-}
-
-double GetPrevGridLine (double position)
-{
-	double prevGridLine = 0;
-	if (position > 0)
-	{
-		PreventUIRefresh(1);
-		double editCursor = GetCursorPositionEx(NULL);
-
-		// prevent edit cursor undo
-		const ConfigVar<int> editCursorUndo("undomask");
-		ConfigVarOverride<int> tmpUndoMask(editCursorUndo, ClearBit(*editCursorUndo, 3));
-
-		SetEditCurPos(position, false, false);
-		Main_OnCommand(40646, 0); // View: Move cursor left to grid division
-		prevGridLine = GetCursorPositionEx(NULL);
-
-		SetEditCurPos(editCursor, false, false);
-		PreventUIRefresh(-1);
-	}
-	return prevGridLine;
-}
-
 double GetClosestGridLine (double position)
 {
 	/* All other GridLine (but not GridDiv) functions   *

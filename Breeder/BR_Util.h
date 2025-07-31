@@ -189,8 +189,6 @@ double GetGridDivSafe (); // makes sure grid div is never over MAX_GRID_DIV
 double GetNextGridDiv (double position);    // unlike other functions,
 double GetPrevGridDiv (double position);    // these don't care about
 double GetClosestGridDiv (double position); // grid visibility
-double GetNextGridLine (double position);
-double GetPrevGridLine (double position);
 double GetClosestGridLine (double position);
 double GetClosestMeasureGridLine (double position);
 double GetClosestLeftSideGridLine (double position);
