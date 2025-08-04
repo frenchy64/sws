@@ -50,7 +50,7 @@ static HWND g_tempoShapeWnd = NULL;
 /******************************************************************************
 * Misc                                                                        *
 ******************************************************************************/
-static bool MoveTempo (BR_Envelope& tempoMap, int id, double timeDiff, bool checkEditedPoints)
+static bool MoveTempo (BR_Envelope& tempoMap, int id, double timeDiff, bool checkEditedPoints, bool inheritPrevBpm)
 {
 	// Get tempo points
 	double t1, t2, t3;
@@ -79,6 +79,12 @@ static bool MoveTempo (BR_Envelope& tempoMap, int id, double timeDiff, bool chec
 	// Calculate new value for previous point
 	if (s1 == SQUARE) Nb1 = b1*(t2-t1) / (Nt2-t1);
 	else              Nb1 = (b1+b2)*(t2-t1) / (Nt2-t1) - Nb2;
+
+	// Current point inherits previous bpm if no next point
+	if (inheritPrevBpm && !P3)
+	{
+		Nb2 = Nb1;
+	}
 
 	// Check if values are legal
 	if (checkEditedPoints)
@@ -337,6 +343,12 @@ static void MoveGridToMouse (COMMAND_T* ct)
 	static int    s_lockedId = -1;
 	static double s_lastPosition = 0;
 
+	bool moveTempoMarker = !!GetBit((int)ct->user, 0);
+	bool moveGridLine = !!GetBit((int)ct->user, 1);
+	bool moveMeasureGridLine = !!GetBit((int)ct->user, 2);
+	// If true
+	bool detectTempo = !!GetBit((int)ct->user, 3);
+
 	// Action called for the first time: reset variables and cache tempo map for future calls
 	if (!g_moveGridTempoMap)
 	{
@@ -344,7 +356,7 @@ static void MoveGridToMouse (COMMAND_T* ct)
 		s_lastPosition = 0;
 
 		// Make sure tempo map already has at least one point created (for some reason it won't work if creating it directly in chunk)
-		if ((int)ct->user != 0 && CountTempoTimeSigMarkers(NULL) == 0) // do it only if not moving tempo marker
+		if (!moveTempoMarker && CountTempoTimeSigMarkers(NULL) == 0) // do it only if not moving tempo marker
 		{
 			InitTempoMap();
 			g_didTempoMapInit = true;
@@ -380,9 +392,9 @@ static void MoveGridToMouse (COMMAND_T* ct)
 			int targetId;
 
 			// Find closest grid tempo marker
-			if ((int)ct->user == 1 || (int)ct->user == 2)
+			if (moveGridLine || moveMeasureGridLine)
 			{
-				grid = ((int)ct->user == 1) ? (GetClosestGridLine(mousePosition)) : (GetClosestMeasureGridLine(mousePosition));
+				grid = (moveGridLine) ? (GetClosestGridLine(mousePosition)) : (GetClosestMeasureGridLine(mousePosition));
 				targetId = g_moveGridTempoMap->Find(grid, MIN_TEMPO_DIST);
 			}
 			// Find closest tempo marker
@@ -417,7 +429,7 @@ static void MoveGridToMouse (COMMAND_T* ct)
 	if (tDiff != 0 && s_lockedId >= 0)
 	{
 		// Warn user if tempo marker couldn't get processed
-		if (!g_moveGridTempoMap || !MoveTempo(*g_moveGridTempoMap, s_lockedId, tDiff, true))
+		if (!g_moveGridTempoMap || !MoveTempo(*g_moveGridTempoMap, s_lockedId, tDiff, true, detectTempo))
 		{
 			static bool s_warnUser = true;
 			if (s_warnUser)
@@ -445,9 +457,12 @@ void MoveGridToMouseInit ()
 	//!WANT_LOCALIZE_1ST_STRING_BEGIN:sws_actions
 	static COMMAND_T s_commandTable[] =
 	{
-		{ { DEFACCEL, "SWS/BR: Move closest tempo marker to mouse cursor (perform until shortcut released)" },      "BR_MOVE_CLOSEST_TEMPO_MOUSE", MoveGridToMouse, NULL, 0},
-		{ { DEFACCEL, "SWS/BR: Move closest grid line to mouse cursor (perform until shortcut released)" },         "BR_MOVE_GRID_TO_MOUSE",       MoveGridToMouse, NULL, 1},
-		{ { DEFACCEL, "SWS/BR: Move closest measure grid line to mouse cursor (perform until shortcut released)" }, "BR_MOVE_M_GRID_TO_MOUSE",     MoveGridToMouse, NULL, 2},
+		{ { DEFACCEL, "SWS/BR: Move closest tempo marker to mouse cursor (perform until shortcut released)" },      "BR_MOVE_CLOSEST_TEMPO_MOUSE", MoveGridToMouse, NULL, BINARY(0001)},
+		{ { DEFACCEL, "SWS/BR: Move closest grid line to mouse cursor (perform until shortcut released)" },         "BR_MOVE_GRID_TO_MOUSE",       MoveGridToMouse, NULL, BINARY(0010)},
+		{ { DEFACCEL, "SWS/BR: Move closest measure grid line to mouse cursor (perform until shortcut released)" }, "BR_MOVE_M_GRID_TO_MOUSE",     MoveGridToMouse, NULL, BINARY(0100)},
+		{ { DEFACCEL, "SWS/BR: Move closest tempo marker to mouse cursor (detect tempo, perform until shortcut released)" },      "BR_MOVE_CLOSEST_TEMPO_MOUSE_DETECT", MoveGridToMouse, NULL, BINARY(1001)},
+		{ { DEFACCEL, "SWS/BR: Move closest grid line to mouse cursor (detect tempo, perform until shortcut released)" },         "BR_MOVE_GRID_TO_MOUSE_DETECT",       MoveGridToMouse, NULL, BINARY(1010)},
+		{ { DEFACCEL, "SWS/BR: Move closest measure grid line to mouse cursor (detect tempo, perform until shortcut released)" }, "BR_MOVE_M_GRID_TO_MOUSE_DETECT",     MoveGridToMouse, NULL, BINARY(1100)},
 		{ {}, LAST_COMMAND}
 	};
 	//!WANT_LOCALIZE_1ST_STRING_END
@@ -460,13 +475,41 @@ void MoveGridToMouseInit ()
 /******************************************************************************
 * Commands: Tempo                                                             *
 ******************************************************************************/
+// deprecated: use MoveGridToCursor. Preserved for backwards compatibility.
 void MoveGridToEditPlayCursor (COMMAND_T* ct)
 {
+	if      ((int)ct->user == 0) ct->user = BINARY(0000_0001); //BR_MOVE_GRID_TO_EDIT_CUR
+	else if ((int)ct->user == 1) ct->user = BINARY(0000_0010); //BR_MOVE_GRID_TO_PLAY_CUR
+	else if ((int)ct->user == 2) ct->user = BINARY(0000_0100); //BR_MOVE_M_GRID_TO_EDIT_CUR
+	else if ((int)ct->user == 3) ct->user = BINARY(0000_1000); //BR_MOVE_M_GRID_TO_PLAY_CUR
+	else if ((int)ct->user == 4) ct->user = BINARY(0001_0000); //BR_MOVE_L_GRID_TO_EDIT_CUR
+	else if ((int)ct->user == 5) ct->user = BINARY(0010_0000); //BR_MOVE_R_GRID_TO_EDIT_CUR
+	MoveGridToCursor(ct);
+}
+
+// XXXX_XXX0   => move to edit cursor
+// XXXX_XXX1   => move to play cursor
+// XXXX_XX0X   => move grid line
+// XXXX_XX1X   => move measure grid line
+// XXXX_10XX   => move left line
+// XXXX_01XX   => move right line
+// XXXX_00XX   => move closest line
+// XXX1_XXXX   => detect tempo (synchronize tempo marker tempo to previous tempo marker if no subsequent tempo marker)
+void MoveGridToCursor (COMMAND_T* ct)
+{
+	bool movePlayCursor = !!GetBit((int)ct->user, 0);
 	// Find cursor immediately (in case of playback we want the most accurate position)
-	bool doPlayCursor = ((int)ct->user == 1 || (int)ct->user == 3) && IsPlaying(NULL);
+	bool doPlayCursor = movePlayCursor && IsPlaying(NULL);
 	double cursor =  (doPlayCursor) ? (GetPlayPositionEx(NULL)) : (GetCursorPositionEx(NULL));
 
 	PreventUIRefresh(1);
+
+	bool moveGridLine = !GetBit((int)ct->user, 1);
+	bool moveMeasureGridLine = !moveGridLine;
+	bool moveLeftLine = !!GetBit((int)ct->user, 3);
+	bool moveRightLine = !!GetBit((int)ct->user, 2);
+	bool moveClosestLine = !moveLeftLine && !moveRightLine;
+	bool detectTempo = !!GetBit((int)ct->user, 4);
 
 	// In case tempo map has no tempo points
 	bool didTempoMapInit = false;
@@ -481,15 +524,15 @@ void MoveGridToEditPlayCursor (COMMAND_T* ct)
 	// Prevent play cursor from jumping
 	ConfigVar<int> seekmodes("seekmodes");
 	const int originalSeekmodes = seekmodes.value_or(0);
-	if ((int)ct->user == 1 || (int)ct->user == 3)
+	if (movePlayCursor)
 		seekmodes.try_set(ClearBit(originalSeekmodes, 5));
 
 	// Find closest grid
 	double grid = 0;
-	if      ((int)ct->user == 0 || (int)ct->user == 1) grid = GetClosestGridLine(cursor);
-	else if ((int)ct->user == 2 || (int)ct->user == 3) grid = GetClosestMeasureGridLine(cursor);
-	else if ((int)ct->user == 4)                       grid = GetClosestLeftSideGridLine(cursor);
-	else                                               grid = GetClosestRightSideGridLine(cursor);
+	if      (moveGridLine)        grid = GetClosestGridLine(cursor);
+	else if (moveClosestMeasureGridLine) grid = GetClosestMeasureGridLine(cursor);
+	else if (moveLeftLine)               grid = GetClosestLeftSideGridLine(cursor);
+	else if (moveRightLine)              grid = GetClosestRightSideGridLine(cursor);
 	int targetId = tempoMap.Find(grid, MIN_TEMPO_DIST);
 
 	// No tempo marker on grid, create it
@@ -508,7 +551,7 @@ void MoveGridToEditPlayCursor (COMMAND_T* ct)
 	bool success = false;
 	if (tDiff != 0)
 	{
-		if (MoveTempo(tempoMap, targetId, tDiff, true))
+		if (MoveTempo(tempoMap, targetId, tDiff, true, detectTempo))
 		{
 			InsertStretchMarkerInAllItems(grid, true);
 			if (tempoMap.Commit())
@@ -548,8 +591,10 @@ void MoveTempo (COMMAND_T* ct)
 	double tDiff = 0;
 	int targetId = -1;
 
+	bool moveClosestTempoMarker = (int)ct->user == 3 || (int)ct->user == 4;
+	bool detectTempo = (int)ct->user == 4;
 	// Find tempo marker closest to the edit cursor
-	if ((int)ct->user == 3)
+	if (moveClosestTempoMarker)
 	{
 		targetId = tempoMap.FindClosest(cursor);
 		if (targetId == 0) ++targetId;
@@ -579,7 +624,7 @@ void MoveTempo (COMMAND_T* ct)
 	{
 		int id = ((int)ct->user == 3) ? (targetId) : (tempoMap.GetSelected(i));
 		if (id > 0) // skip first point
-			skipped += (MoveTempo(tempoMap, id, tDiff, true)) ? (0) : (1);
+			skipped += (MoveTempo(tempoMap, id, tDiff, true, detectTempo)) ? (0) : (1);
 	}
 
 	// Commit changes

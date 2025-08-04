@@ -35,7 +35,8 @@ void MoveGridToMouseInit ();
 /******************************************************************************
 * Commands: Tempo                                                             *
 ******************************************************************************/
-void MoveGridToEditPlayCursor (COMMAND_T*);
+void MoveGridToEditPlayCursor (COMMAND_T*); // deprecated: use MoveGridToCursor
+void MoveGridToCursor (COMMAND_T*);
 void MoveTempo (COMMAND_T*);
 void EditTempo (COMMAND_T*);
 void EditTempoGradual (COMMAND_T*);
