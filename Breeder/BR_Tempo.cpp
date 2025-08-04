@@ -478,12 +478,12 @@ void MoveGridToMouseInit ()
 // deprecated: use MoveGridToCursor. Preserved for backwards compatibility.
 void MoveGridToEditPlayCursor (COMMAND_T* ct)
 {
-	if      ((int)ct->user == 0) ct->user = BINARY(0000_0001); //BR_MOVE_GRID_TO_EDIT_CUR
-	else if ((int)ct->user == 1) ct->user = BINARY(0000_0010); //BR_MOVE_GRID_TO_PLAY_CUR
-	else if ((int)ct->user == 2) ct->user = BINARY(0000_0100); //BR_MOVE_M_GRID_TO_EDIT_CUR
-	else if ((int)ct->user == 3) ct->user = BINARY(0000_1000); //BR_MOVE_M_GRID_TO_PLAY_CUR
-	else if ((int)ct->user == 4) ct->user = BINARY(0001_0000); //BR_MOVE_L_GRID_TO_EDIT_CUR
-	else if ((int)ct->user == 5) ct->user = BINARY(0010_0000); //BR_MOVE_R_GRID_TO_EDIT_CUR
+	if      ((int)ct->user == 0) ct->user = BINARY(0000_0000); //BR_MOVE_GRID_TO_EDIT_CUR
+	else if ((int)ct->user == 1) ct->user = BINARY(0001_0001); //BR_MOVE_GRID_TO_PLAY_CUR
+	else if ((int)ct->user == 2) ct->user = BINARY(0000_0010); //BR_MOVE_M_GRID_TO_EDIT_CUR
+	else if ((int)ct->user == 3) ct->user = BINARY(0000_0011); //BR_MOVE_M_GRID_TO_PLAY_CUR
+	else if ((int)ct->user == 4) ct->user = BINARY(0000_1000); //BR_MOVE_L_GRID_TO_EDIT_CUR
+	else if ((int)ct->user == 5) ct->user = BINARY(0000_0100); //BR_MOVE_R_GRID_TO_EDIT_CUR
 	MoveGridToCursor(ct);
 }
 
