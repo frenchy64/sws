@@ -1766,7 +1766,7 @@ double GetNextGridDiv (double position)
 			gridDiv = (den*gridDiv) / 4;
 		}
 		
-		// How much measures must pass for grid diving to start anew? (again, obvious when grid division spans more measures)
+		// How many measures must pass for grid diving to start anew? (again, obvious when grid division spans more measures)
 		int measureStep = (int)(gridDiv/num);
 		if (measureStep == 0) measureStep = 1;
 

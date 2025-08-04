@@ -527,7 +527,7 @@ void MoveGridToCursor (COMMAND_T* ct)
 	if (movePlayCursor)
 		seekmodes.try_set(ClearBit(originalSeekmodes, 5));
 
-	// Find closest grid
+	// Find grid line to move
 	double grid = 0;
 	if      (moveGridLine)        grid = GetClosestGridLine(cursor);
 	else if (moveClosestMeasureGridLine) grid = GetClosestMeasureGridLine(cursor);
