@@ -529,10 +529,10 @@ void MoveGridToCursor (COMMAND_T* ct)
 
 	// Find grid line to move
 	double grid = 0;
-	if      (moveGridLine)        grid = GetClosestGridLine(cursor);
-	else if (moveClosestMeasureGridLine) grid = GetClosestMeasureGridLine(cursor);
-	else if (moveLeftLine)               grid = GetClosestLeftSideGridLine(cursor);
-	else if (moveRightLine)              grid = GetClosestRightSideGridLine(cursor);
+	if      (moveGridLine && moveClosestLine)        grid = GetClosestGridLine(cursor);
+	else if (moveMeasureGridLine && moveClosestLine) grid = GetClosestMeasureGridLine(cursor);
+	else if (moveGridLine && moveLeftLine)           grid = GetClosestLeftSideGridLine(cursor);
+	else if (moveGridLine && moveRightLine)          grid = GetClosestRightSideGridLine(cursor);
 	int targetId = tempoMap.Find(grid, MIN_TEMPO_DIST);
 
 	// No tempo marker on grid, create it

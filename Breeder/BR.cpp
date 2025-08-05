@@ -1188,7 +1188,7 @@ static COMMAND_T g_commandTable[] =
 	{ { DEFACCEL, "SWS/BR: Move tempo marker forward" },                               "SWS_BRMOVETEMPOFORWARD",             MoveTempo, NULL, 2},
 	{ { DEFACCEL, "SWS/BR: Move tempo marker back" },                                  "SWS_BRMOVETEMPOBACK",                MoveTempo, NULL, -2},
 	{ { DEFACCEL, "SWS/BR: Move closest tempo marker to edit cursor" },                "BR_MOVE_CLOSEST_TEMPO",              MoveTempo, NULL, 3},
-	{ { DEFACCEL, "SWS/BR: Move closest tempo marker to edit cursor (detect tempo)" }, "BR_MOVE_CLOSEST_TEMPO_DETECT_TEMPO", MoveTempo, NULL, 4},
+	//FIXME { { DEFACCEL, "SWS/BR: Move closest tempo marker to edit cursor (detect tempo)" }, "BR_MOVE_CLOSEST_TEMPO_DETECT_TEMPO", MoveTempo, NULL, 4},
 
 	{ { DEFACCEL, "SWS/BR: Increase tempo marker 0.001 BPM (preserve overall tempo)" },                                       "BR_INC_TEMPO_0.001_BPM",      EditTempo, NULL, 1},
 	{ { DEFACCEL, "SWS/BR: Increase tempo marker 0.01 BPM (preserve overall tempo)" },                                        "BR_INC_TEMPO_0.01_BPM",       EditTempo, NULL, 10},
